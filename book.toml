@@ -1,0 +1,6 @@
+[book]
+authors = ["Milittle"]
+language = "en"
+multilingual = false
+src = "src"
+title = "effective-rust-cn"
