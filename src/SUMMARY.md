@@ -1,6 +1,7 @@
-# Summary
+# 总结
 
-- [Cover](./Cover.md)
-- [Introduction](./Introduction.md)
-- [Types](./Types.md)
-  - [Item 1: Use the type system to express your data structures](./Types/Item1.md)
+- [封面](./Cover.md)
+- [介绍](./Introduction.md)
+- [类型](./Types.md)
+  - [条目 1: 使用类型系统表达你的数据结构](./Types/Item1.md)
+  - [# 条目2：使用类型系统来表达常见行为](./Types/Item2.md)

@@ -1,4 +1,4 @@
-# 项目 1: 使用类型系统表达你的数据结构
+# 条目 1: 使用类型系统表达你的数据结构
 
 ```
 "who called them programers and not type writers" – @thingskatedid
@@ -17,7 +17,7 @@ Rust类型系统的基础对于来自另一种静态类型编程语言（如C++�
 
 这段代码会产生如下错误：
 
-```rust
+```shell
 error[E0308]: mismatched types
   --> use-types/src/main.rs:14:22
    |
@@ -32,7 +32,7 @@ help: you can convert an `i32` to an `i16` and panic if the converted value does
    |                       ++++++++++++++++++++
 ```
 
-这令人非常安心：Rust不会在程序员进行风险操作时静静地坐在那里。Rust不但显示出有更严格的规则，而且它也有有用的编译器消息，指出如何遵守这些规则。建议的解决方案引发了一个问题，即如何处理转换可能改变值的情况，我们稍后还会在错误处理（项目4）和使用panic!（项目18）上有更多讨论。
+这令人非常安心：Rust不会在程序员进行风险操作时静静地坐在那里。Rust不但显示出有更严格的规则，而且它也有有用的编译器消息，指出如何遵守这些规则。建议的解决方案引发了一个问题，即如何处理转换可能改变值的情况，我们稍后还会在错误处理（条目 4）和使用panic!（条目 18）上有更多讨论。
 
 Rust还不允许一些可能看似“安全”的操作：
 
@@ -43,7 +43,7 @@ Rust还不允许一些可能看似“安全”的操作：
 
 这段代码会产生如下错误：
 
-```rust
+```shell
 error[E0308]: mismatched types
   --> use-types/src/main.rs:23:22
    |
@@ -59,18 +59,18 @@ help: you can convert an `i32` to an `i64`
 
 ```
 
-在这里，建议的解决方案并没有提出错误处理的问题，但转换仍然需要是显式的。我们稍后将更详细地讨论类型转换（项目6）。
+在这里，建议的解决方案并没有提出错误处理的问题，但转换仍然需要是显式的。我们稍后将更详细地讨论类型转换（条目 6）。
 
 继续介绍基本的原始类型，Rust包括用于布尔值的`bool`类型，浮点类型（`f32`、`f64`）以及类似于C语言中的void的单位类型`()`。
 
 更值得注意的是，Rust具有`char`字符类型，它存储一个Unicode值，类似于Go的`rune`类型。虽然内部存储为4字节，但Rust不允许将其自由地转换为32位整数或从32位整数转换得来
 
-这种类型系统的严谨性强制你在代码中明确表达 —— 一个`u32`值与一个`char`不同，与一串UTF-8字节不同，与一串任意字节不同。定义你正在操作的内存取决于你。乔尔·斯波尔斯基（Joel Spolsky）关于Unicode的[著名博客文章](!https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/)可以帮助理解这些差异。
+这种类型系统的严谨性强制你在代码中明确表达 —— 一个`u32`值与一个`char`不同，与一串UTF-8字节不同，与一串任意字节不同。定义你正在操作的内存取决于你。乔尔·斯波尔斯基（Joel Spolsky）关于Unicode的[著名博客文章](https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/)可以帮助理解这些差异。
 
 虽然Rust提供了帮助方法来转换这些不同的类型，但它们的签名要求你管理或明确忽略转换错误的风险。例如，任何Unicode代码点都可以用32位表示，因此将'a'转换为u32是允许的。然而，从u32转换为char则更复杂，因为可能存在无效的Unicode代码点。
 
 * `char::from_u32` 返回一个`Option<char>`，强制要求调用者来处理错误的情况
-* `char::from_u32_unchecked` 假定输入是有效的Unicode代码点，这样就可以避免运行时检查，但是它的结果是需要标记位`unsafe`的，强制调用者也是unsafe的(项目16相关)
+* `char::from_u32_unchecked` 假定输入是有效的Unicode代码点，这样就可以避免运行时检查，但是它的结果是需要标记位`unsafe`的，强制调用者也是unsafe的(条目 16相关)
 
 
 # 聚合类型（Aggregate Types）
@@ -144,7 +144,7 @@ fn main() {
 
 不像bool版本，如果库的使用者不小心将参数的顺序搞错了，那么编译器就会立即抱怨，让你知道你犯了一个错误。
 
-```rust
+```shell
 error[E0308]: mismatched types
   --> use-types/src/main.rs:89:20
    |
@@ -158,7 +158,7 @@ error[E0308]: mismatched types
 
 ```
 
-（使用新类型模式（项目7）来包装布尔值也可以实现类型安全和可维护性；如果语义将始终是布尔值，通常最好使用该方法，并且如果将来可能出现新的替代项（例如 Sides::BothAlternateOrientation），则使用枚举。）
+（使用新类型模式（条目 7）来包装布尔值也可以实现类型安全和可维护性；如果语义将始终是布尔值，通常最好使用该方法，并且如果将来可能出现新的替代项（例如 Sides::BothAlternateOrientation），则使用枚举。）
 
 Rust的枚举的类型安全性在匹配表达式中继续体现：
 
@@ -172,7 +172,7 @@ Rust的枚举的类型安全性在匹配表达式中继续体现：
 
 这段代码会产生如下错误：
 
-```rust
+```shell
 error[E0004]: non-exhaustive patterns: `Teapot` not covered
   --> use-types/src/main.rs:65:25
    |
@@ -256,4 +256,4 @@ struct DisplayProperties {
 
 第二个常见概念源自错误处理：如果一个函数失败了，该如何报告这个失败？在历史上，特殊的标记值（例如来自Linux系统调用的 -errno 返回值）或全局变量（POSIX系统的 errno）被使用。最近，支持从函数返回多个或元组返回值的语言（如Go）可能有一个约定，即在错误为非“零”时返回（结果，错误）对。
 
-在Rust中，总是将可能失败的操作的结果编码为 Result<T, E>。T 类型保存成功的结果（在 Ok 变体中），E 类型在失败时保存错误详情（在 Err 变体中）。使用标准类型可以清晰地表达设计意图，并允许使用标准转换（项目3）和错误处理（项目4）；它还使得通过 ? 操作符来简化错误处理成为可能。
+在Rust中，总是将可能失败的操作的结果编码为 Result<T, E>。T 类型保存成功的结果（在 Ok 变体中），E 类型在失败时保存错误详情（在 Err 变体中）。使用标准类型可以清晰地表达设计意图，并允许使用标准转换（条目3）和错误处理（条目4）；它还使得通过 ? 操作符来简化错误处理成为可能。
