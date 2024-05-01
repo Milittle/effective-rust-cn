@@ -177,7 +177,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="条目2使用类型系统来表达常见行为"><a class="header" href="#条目2使用类型系统来表达常见行为">条目2：使用类型系统来表达常见行为</a></h1>
-<p><a href="./Item1.html">条目 1</a> 讨论了如何使用在类型系统中表达数据结构；本项目将讨论如何使用类型系统来表达常见行为。</p>
+<p><a href="./Item1.html">条目 1</a> 讨论了如何使用在类型系统中表达数据结构；本条目将讨论如何使用类型系统来表达常见行为（函数）。</p>
 <h1 id="方法methods"><a class="header" href="#方法methods">方法（Methods）</a></h1>
 <p>首先，Rust类型系统的第一个行为就是向数据结构中添加方法：这些方法作用于某个类型的成员，由 self 标识。这种方式将相关数据和代码以面向对象的方式封装在一起，与其他语言类似；然而，在 Rust 中，方法不仅可以添加到结构类型，还可以添加到枚举类型，这与 Rust 枚举的普遍性质保持一致<a href="./Item1.html">条目 1</a> 。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
