@@ -1,10 +1,10 @@
 # 条目2：使用类型系统来表达常见行为
 
-Item 1 讨论了如何使用在类型系统中表达数据结构；本项目将讨论如何使用类型系统来表达常见行为。
+[条目 1](./Item1.md) 讨论了如何使用在类型系统中表达数据结构；本项目将讨论如何使用类型系统来表达常见行为。
 
 # 方法（Methods）
 
-首先，Rust类型系统的第一个行为就是向数据结构中添加方法：这些方法作用于某个类型的成员，由 self 标识。这种方式将相关数据和代码以面向对象的方式封装在一起，与其他语言类似；然而，在 Rust 中，方法不仅可以添加到结构类型，还可以添加到枚举类型，这与 Rust 枚举的普遍性质保持一致（条目 1）。
+首先，Rust类型系统的第一个行为就是向数据结构中添加方法：这些方法作用于某个类型的成员，由 self 标识。这种方式将相关数据和代码以面向对象的方式封装在一起，与其他语言类似；然而，在 Rust 中，方法不仅可以添加到结构类型，还可以添加到枚举类型，这与 Rust 枚举的普遍性质保持一致[条目 1](./Item1.md) 。
 
 ```rust
 enum Shape {
@@ -90,7 +90,7 @@ For more information about this error, try `rustc --explain E0369`.
 error: could not compile `playground` (bin "playground") due to 1 previous error
 ```
 
-相反,编译器错误表明该类型是类似于`fn(i32, i32) -> i32 {main::sum}`的东西,这是一种完全内部的编译器类型(即无法在用户代码中编写),它不仅标识了具体的函数,还标识了它的签名。换句话说,`sum`的类型同时编码了函数的签名和它的位置([出于优化原因](https://doc.rust-lang.org/std/primitive.fn.html#creating-function-pointers));但是这种类型可以自动强制转换为`fn`类型(条目6)。
+相反,编译器错误表明该类型是类似于`fn(i32, i32) -> i32 {main::sum}`的东西,这是一种完全内部的编译器类型(即无法在用户代码中编写),它不仅标识了具体的函数,还标识了它的签名。换句话说,`sum`的类型同时编码了函数的签名和它的位置([出于优化原因](https://doc.rust-lang.org/std/primitive.fn.html#creating-function-pointers));但是这种类型可以自动强制转换为`fn`类型(条目 6)。
 
 ## 闭包（Closures）
 
