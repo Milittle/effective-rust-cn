@@ -4,4 +4,5 @@
 - [介绍](./Introduction.md)
 - [类型](./Types.md)
   - [条目 1: 使用类型系统表达你的数据结构](./Types/Item1.md)
-  - [条目2：使用类型系统来表达常见行为](./Types/Item2.md)
+  - [条目 2：使用类型系统来表达常见行为](./Types/Item2.md)
+  - [条目 3: 避免在Option和Result类型上使用match操作](./Types/Item3.md)
