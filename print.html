@@ -201,7 +201,7 @@
 <div style="break-before: page; page-break-before: always;"></div><h1 id="types"><a class="header" href="#types">Types</a></h1>
 <p>这本书的第一部分涵盖了围绕Rust类型系统的建议。这个类型系统比其他主流语言的类型系统更具表达力；它与诸如OCaml或Haskell这样的“学术”语言有更多共同之处。</p>
 <p>其中一个核心部分是Rust的枚举类型，这比其他语言中的枚举类型具有更高的表达力，并且允许使用代数数据类型。</p>
-<p>Rust类型系统的另一个核心支柱是特征类型（trait type）。特征大致相当于其他语言中的接口类型，但它们也与Rust的泛型（项目12）相关联，以允许在没有运行时开销的情况下重用接口。</p>
+<p>Rust类型系统的另一个核心支柱是特征类型（trait type）。特征大致相当于其他语言中的接口类型，但它们也与Rust的泛型（条目 12）相关联，以允许在没有运行时开销的情况下重用接口。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="条目-1-使用类型系统表达你的数据结构"><a class="header" href="#条目-1-使用类型系统表达你的数据结构">条目 1: 使用类型系统表达你的数据结构</a></h1>
 <pre><code>"who called them programers and not type writers" – @thingskatedid
 </code></pre>
@@ -403,9 +403,9 @@ struct DisplayProperties {
 <p>第二个常见概念源自错误处理：如果一个函数失败了，该如何报告这个失败？在历史上，特殊的标记值（例如来自Linux系统调用的 -errno 返回值）或全局变量（POSIX系统的 errno）被使用。最近，支持从函数返回多个或元组返回值的语言（如Go）可能有一个约定，即在错误为非“零”时返回（结果，错误）对。</p>
 <p>在Rust中，总是将可能失败的操作的结果编码为 Result&lt;T, E&gt;。T 类型保存成功的结果（在 Ok 变体中），E 类型在失败时保存错误详情（在 Err 变体中）。使用标准类型可以清晰地表达设计意图，并允许使用标准转换（条目3）和错误处理（条目4）；它还使得通过 ? 操作符来简化错误处理成为可能。</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="条目2使用类型系统来表达常见行为"><a class="header" href="#条目2使用类型系统来表达常见行为">条目2：使用类型系统来表达常见行为</a></h1>
-<p>Item 1 讨论了如何使用在类型系统中表达数据结构；本项目将讨论如何使用类型系统来表达常见行为。</p>
+<p><a href="Types/./Item1.html">条目 1</a> 讨论了如何使用在类型系统中表达数据结构；本项目将讨论如何使用类型系统来表达常见行为。</p>
 <h1 id="方法methods"><a class="header" href="#方法methods">方法（Methods）</a></h1>
-<p>首先，Rust类型系统的第一个行为就是向数据结构中添加方法：这些方法作用于某个类型的成员，由 self 标识。这种方式将相关数据和代码以面向对象的方式封装在一起，与其他语言类似；然而，在 Rust 中，方法不仅可以添加到结构类型，还可以添加到枚举类型，这与 Rust 枚举的普遍性质保持一致（条目 1）。</p>
+<p>首先，Rust类型系统的第一个行为就是向数据结构中添加方法：这些方法作用于某个类型的成员，由 self 标识。这种方式将相关数据和代码以面向对象的方式封装在一起，与其他语言类似；然而，在 Rust 中，方法不仅可以添加到结构类型，还可以添加到枚举类型，这与 Rust 枚举的普遍性质保持一致<a href="Types/./Item1.html">条目 1</a> 。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>enum Shape {
@@ -482,7 +482,7 @@ help: use parentheses to call these
 For more information about this error, try `rustc --explain E0369`.
 error: could not compile `playground` (bin "playground") due to 1 previous error
 </code></pre>
-<p>相反,编译器错误表明该类型是类似于<code>fn(i32, i32) -&gt; i32 {main::sum}</code>的东西,这是一种完全内部的编译器类型(即无法在用户代码中编写),它不仅标识了具体的函数,还标识了它的签名。换句话说,<code>sum</code>的类型同时编码了函数的签名和它的位置(<a href="https://doc.rust-lang.org/std/primitive.fn.html#creating-function-pointers">出于优化原因</a>);但是这种类型可以自动强制转换为<code>fn</code>类型(条目6)。</p>
+<p>相反,编译器错误表明该类型是类似于<code>fn(i32, i32) -&gt; i32 {main::sum}</code>的东西,这是一种完全内部的编译器类型(即无法在用户代码中编写),它不仅标识了具体的函数,还标识了它的签名。换句话说,<code>sum</code>的类型同时编码了函数的签名和它的位置(<a href="https://doc.rust-lang.org/std/primitive.fn.html#creating-function-pointers">出于优化原因</a>);但是这种类型可以自动强制转换为<code>fn</code>类型(条目 6)。</p>
 <h2 id="闭包closures"><a class="header" href="#闭包closures">闭包（Closures）</a></h2>
 <p>裸函数指针是有一些限制的，因为裸函数指针唯一可用的输入就是作为参数值显示传递的输入。</p>
 <p>例如，考虑到使用一个函数指针来修改切片的元素：</p>
