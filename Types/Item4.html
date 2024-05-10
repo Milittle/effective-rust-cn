@@ -1,0 +1,489 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>条目 4: 优先惯用的Error类型 - effective-rust-cn</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../Cover.html"><strong aria-hidden="true">1.</strong> 封面</a></li><li class="chapter-item expanded "><a href="../Introduction.html"><strong aria-hidden="true">2.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="../Types.html"><strong aria-hidden="true">3.</strong> 类型</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../Types/Item1.html"><strong aria-hidden="true">3.1.</strong> 条目 1: 使用类型系统表达你的数据结构</a></li><li class="chapter-item expanded "><a href="../Types/Item2.html"><strong aria-hidden="true">3.2.</strong> 条目 2：使用类型系统来表达常见行为</a></li><li class="chapter-item expanded "><a href="../Types/Item3.html"><strong aria-hidden="true">3.3.</strong> 条目 3: 避免在Option和Result类型上使用match操作</a></li><li class="chapter-item expanded "><a href="../Types/Item4.html" class="active"><strong aria-hidden="true">3.4.</strong> 条目 4: 优先惯用的Error类型</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">effective-rust-cn</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/Milittle/effective-rust-cn" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="条目-4-优先惯用的error类型"><a class="header" href="#条目-4-优先惯用的error类型">条目 4: 优先惯用的Error类型</a></h1>
+<p><a href="./Item3.html">条目 3</a>描述了如何使用标准库为<code>Option</code>和<code>Result</code>类型提供的转换方法，允许使用<code>?</code>运算符对结果类型进行简洁、方便的处理。但是并没有详细讨论如何进行类型<code>Result&lt;T, E&gt;</code>的第二个不同的错误类型之间的相互转换；这个条目将讨论这个问题。</p>
+<p>这个条目只有当我们具有很多个不同的错误类型时才有意义。如果函数遇到的所有不同的错误都是同一种类型，那么直接返回该类型即可。当存在不同类型的错误时，需要决定是否应该保留子错误类型的信息。</p>
+<h2 id="错误特征-error-trait"><a class="header" href="#错误特征-error-trait">错误特征 （Error Trait）</a></h2>
+<p>了解标准的Trait（条目 10）是非常有必要的一件事情，这里面有一个<code>trait</code>就是<a href="https://doc.rust-lang.org/std/error/trait.Error.html"><code>std::error::Error</code></a>。<code>Result</code>类型的参数<code>E</code>不是必须实现<code>Error trait</code>，但是最好让你的错误类型实现<code>Error trait</code>，这样就可以允许错误类型包装器可以表达合适的<code>trait bound</code>.</p>
+<p>首先需要注意的时<code>Error</code>类型的唯一硬性要求的<code>trait bound</code>:任何实现了<code>Error</code>类型还需要实现以下特征：</p>
+<ul>
+<li><code>Display trait</code>: 意味着它可以使用<code>{}</code>进行<code>format!</code>编辑</li>
+<li><code>Debug trait</code>: 意味着它可以使用<code>{:?}</code>进行<code>format!</code>编辑</li>
+</ul>
+<p>换句话说，应该使用上述格式化来向用户和程序员显示<code>Error</code>类型</p>
+<p><code>Error trait</code>有唯一的方法<a href="https://doc.rust-lang.org/std/error/trait.Error.html#method.source"><code>source()</code></a>可以让<code>Error</code>类型暴露内部嵌套的内部错误。这个方法时可选的，默认的实现（条目 13）返回<code>None</code>，表示它内部的错误类型是不可用的。</p>
+<p>最后需要注意的是：如果你的代码是工作在<code>no_std</code>环境中的，那么你无法实现<code>Error trait</code>，因为<code>std</code>库中的<code>Error trait</code>是<code>std</code>的一部分而不是<code>core</code>的一部分。</p>
+<h2 id="最小的错误-minimal-errors"><a class="header" href="#最小的错误-minimal-errors">最小的错误 (Minimal Errors)</a></h2>
+<p>如果不需要嵌套的错误信息，那么实现<code>Error</code>类型可能就是一个字符串的效果 —— 那么这样直接使用<code>String</code>类型会是比较合适的方式。也不需要比<code>String</code>实现更多的能力，所以使用<code>String</code>作为<code>E</code>类型的参数。</p>
+<pre><code class="language-shell">pub fn find_user(username: &amp;str) -&gt; Resutl&lt;UserId, String&gt; {
+    let f = std::fs::File::open("/etc/passwd")
+        .map_err(|e| format!("Failed to open password file: {:?}", e))?;
+    // ...
+}
+</code></pre>
+<p><code>String</code>没有实现<code>Error</code>，我们更加倾向于选择<code>String</code>让上层的代码更好的处理<code>Error</code>。也不可能对<code>String</code>类型实现<code>Error</code>，因为这两个类型不满足孤儿原则。</p>
+<pre><code class="language-shell">impl std::error::Error for String {}
+</code></pre>
+<pre><code class="language-shell">error[E0117]: only traits defined in the current crate can be implemented for
+              types defined outside of the crate
+  --&gt; src/main.rs:18:5
+   |
+18 |     impl std::error::Error for String {}
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^------
+   |     |                          |
+   |     |                          `String` is not defined in the current crate
+   |     impl doesn't use only types from inside the current crate
+   |
+   = note: define and implement a trait or new type instead
+</code></pre>
+<p>类型别名也不能解决这种问题，因为类型别名不会创建新类型，因为编译错误也是一样的：</p>
+<pre><code class="language-shell">pub type MyError = String;
+
+impl std::error::Error for MyError {}
+</code></pre>
+<pre><code class="language-shell">error[E0117]: only traits defined in the current crate can be implemented for
+              types defined outside of the crate
+  --&gt; src/main.rs:41:5
+   |
+41 |     impl std::error::Error for MyError {}
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^-------
+   |     |                          |
+   |     |                          `String` is not defined in the current crate
+   |     impl doesn't use only types from inside the current crate
+   |
+   = note: define and implement a trait or new type instead
+</code></pre>
+<p>像上面的报错一样，编译器错误信息给出了解决问题的提示，定义一个包装器类型 <code>MyError</code>（新类型模式，条目 6）允许该类型可以实现<code>Error trait</code>。(通常我们需要实现特定的trait的时候，但是两个类型不满足孤儿原则，则需要通过此手段进行trait的实现)</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug)]
+pub struct MyError(String);
+
+impl std::fmt::Display for MyError {
+    fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::error::Error for MyError {}
+
+pub fn find_user(username: &amp;str) -&gt; Result&lt;UserId, MyError&gt; {
+    let f = std::fs::File::open("/etc/passwd").map_err(|e| {
+        MyError(format!("Failed to open password file: {:?}", e))
+    })?;
+    // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>为了方便起见，给<code>MyError</code>类型实现<code>From&lt;String&gt;</code>特征是非常有意义的，这样便于我们从字符串转换成<code>MyError</code>类型（条目 5）</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl From&lt;String&gt; for MyError {
+    fn from(s: String) -&gt; Self {
+        Self(s)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>当遇到<code>?</code>运算符的时候，编译器将自动转换实现了相关<code>From</code>特征的类型到目标错误类型，这将非常的方便。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub fn find_user(username: &amp;str) -&gt; Result&lt;UserId, MyError&gt; {
+    let f = std::fs::File::open("/etc/passwd")
+        .map_err(|e| format!("Failed to open password file: {:?}", e))?;
+    // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>上述的示例的错误路径如下：</p>
+<ul>
+<li><code>File::open</code>返回一个错误类型<code>std::io::Error</code>。</li>
+<li><code>format!</code>实现了<code>Debug</code>特征的<code>std::io::Error</code>类型转换为一个<code>String</code>。</li>
+<li><code>?</code>运算符和使得编译器可以从<code>String</code>类型转换为实现了<code>From&lt;String&gt;</code>特征的<code>MyError</code>类型。</li>
+</ul>
+<h2 id="嵌套错误-nested-errors"><a class="header" href="#嵌套错误-nested-errors">嵌套错误 (Nested Errors)</a></h2>
+<p>另一种时嵌套错误内容很重要，需要保留它并提供给调用者。</p>
+<p>考虑一个库函数，它尝试以字符串(String)的方式返回一个文件的第一行不太长的内容，稍微思考一下，也有可能会发生如下三种类型的故障：</p>
+<ul>
+<li>该文件可能不存在或者无法读取</li>
+<li>该文件可能包含无效的UTF-8数据，因为无法转换为<code>String</code></li>
+<li>该文件的第一行可能太长</li>
+</ul>
+<p>根据<a href="./Item1.html">条目 1</a>，你可以使用类型系统将所有可能性表达为<code>enum</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug)]
+pub enum MyError {
+    Io(std::io::Error),
+    Utf8(std::string::FromUtf8Error),
+    General(String),
+}
+<span class="boring">}</span></code></pre></pre>
+<p>此 enum 定义包含 derive(Debug) ，但为了满足 Error 特征，还需要 Display 实现：</p>
+<pre><code class="language-shell">impl std::fmt::Display for MyError {
+    fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+        match self {
+            MyError::Io(e) =&gt; write!(f, "I/O error: {}", e),
+            MyError::Utf8(e) =&gt; write!(f, "UTF-8 error: {}", e),
+            MyError::General(e) =&gt; write!(f, "General error: {}", e),
+        }
+    }
+}
+</code></pre>
+<p>覆写默认的<code>source()</code>实现也很有意义，以便轻松访问嵌套类型的错误：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::error::Error;
+
+impl Error for MyError {
+    fn source(&amp;self) -&gt; Option&lt;&amp;(dyn Error + 'static)&gt; {
+        match self {
+            MyError::Io(e) =&gt; Some(e),
+            MyError::Utf8(e) =&gt; Some(e),
+            MyError::General(_) =&gt; None,
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>使用<code>enum</code>可以使错误处理变得简洁同时保留不同错误类型的信息：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::io::BufRead; // for `.read_until()`
+
+/// Maximum supported line length.
+const MAX_LEN: usize = 1024;
+
+/// Return the first line of the given file.
+pub fn first_line(filename: &amp;str) -&gt; Result&lt;String, MyError&gt; {
+    let file = std::fs::File::open(filename).map_err(MyError::Io)?;
+    let mut reader = std::io::BufReader::new(file);
+
+    // (A real implementation could just use `reader.read_line()`)
+    let mut buf = vec![];
+    let len = reader.read_until(b'\n', &amp;mut buf).map_err(MyError::Io)?;
+    let result = String::from_utf8(buf).map_err(MyError::Utf8)?;
+    if result.len() &gt; MAX_LEN {
+        return Err(MyError::General(format!("Line too long: {}", len)));
+    }
+    Ok(result)
+}
+<span class="boring">}</span></code></pre></pre>
+<p>为所有子错误类型实现<code>From</code>特征是非常有意义的，这样可以使得错误处理更加简洁：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl From&lt;std::io::Error&gt; for MyError {
+    fn from(e: std::io::Error) -&gt; Self {
+        Self::Io(e)
+    }
+}
+impl From&lt;std::string::FromUtf8Error&gt; for MyError {
+    fn from(e: std::string::FromUtf8Error) -&gt; Self {
+        Self::Utf8(e)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>这个可以防止库使用者受到孤儿规则的限制，不允许他们在<code>MyError</code>上实现 <code>From</code> trait。因为对于 <code>From</code> trait和<code>MyError</code>对于库使用者来说都是外部的类型。</p>
+<p>最好的是实现<code>From</code> trait可以让这个过程更加的简洁，因为问号运算符可以自动将实现了<code>From</code> trait的错误类型转换为<code>MyError</code>类型。从而不需要<code>map_err</code>来处理错误。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::io::BufRead; // for `.read_until()`
+
+/// Maximum supported line length.
+pub const MAX_LEN: usize = 1024;
+
+/// Return the first line of the given file.
+pub fn first_line(filename: &amp;str) -&gt; Result&lt;String, MyError&gt; {
+    let file = std::fs::File::open(filename)?; // `From&lt;std::io::Error&gt;`
+    let mut reader = std::io::BufReader::new(file);
+    let mut buf = vec![];
+    let len = reader.read_until(b'\n', &amp;mut buf)?; // `From&lt;std::io::Error&gt;`
+    let result = String::from_utf8(buf)?; // `From&lt;string::FromUtf8Error&gt;`
+    if result.len() &gt; MAX_LEN {
+        return Err(MyError::General(format!("Line too long: {}", len)));
+    }
+    Ok(result)
+}
+<span class="boring">}</span></code></pre></pre>
+<p>编写完整的错误类型可能涉及很多的样板代码，这使得通过<code>derive</code>宏来自动化是实现是非常好的实践（条目 28）。然而，没有必要自己编写这样的宏，考虑使用David Tolnay的<code>thiserror</code>库，它提供了这个类高质量以及广泛的使用的宏。<code>thiserror</code>生成的代码还小心地避免了<code>thiserror</code>类型在生成式API中可见性，反过来讲，这样将对于（条目 24）的问题会不太适用。</p>
+<h2 id="trait对象-trait-objects"><a class="header" href="#trait对象-trait-objects">trait对象 (Trait Objects)</a></h2>
+<p>第一种处理嵌套错误的方法丢弃了所有子错误的详细信息，只保留了一些字符串输出（即format!("{:?}", err)）。第二种方法保留了所有可能子错误的完整类型信息，但需要完全枚举所有可能的子错误类型。</p>
+<p>这里有一个问题，是否有一种折中的方法，既能保留子错误信息，又不需要手动包括每一种可能的错误类型？</p>
+<p>将子错误信息编码为<a href="https://doc.rust-lang.org/reference/types/trait-object.html">trait对象</a>避免了为每种错误创建枚举变体的需要，抹去了特定底层错误类型的细节。接收这种对象的人将能够访问<code>Error trait</code>及其<code>trait bounds</code>的方法 -- <code>source()</code>、<code>Display::fmt()</code> 和 <code>Debug::fmt()</code>，但不需要知道子错误的原始静态类型。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug)]
+pub enum WrappedError {
+    Wrapped(Box&lt;dyn Error&gt;),
+    General(String),
+}
+
+impl std::fmt::Display for WrappedError {
+    fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+        match self {
+            Self::Wrapped(e) =&gt; write!(f, "Inner error: {}", e),
+            Self::General(s) =&gt; write!(f, "{}", s),
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>事实证明这是可能的，但这种方式出奇的微妙。部分难度来自于<code>trait object</code>的对象安全性约束（条目 12），这里Rust的一致性规则起到了作用，这些规则大致说的是一个类型最多可以实现一次<code>trait</code>。</p>
+<p>假设有一个错误包装类型<code>WrappedError</code>通常会实现如下两个功能：</p>
+<ul>
+<li>实现<code>Error trait</code>, 因为它本身也是一个错误类型。</li>
+<li>实现<code>From</code> trait，以便将任何实现了<code>Error trait</code>的子类型转换为<code>WrappedError</code>。</li>
+</ul>
+<p>因为<code>WrappedError</code>实现了<code>Error trait</code>，这个意味着<code>WrappedError</code>类型可以通过<code>From</code>实现自我转换，这样就与<code>From trait</code>的全面自反实现冲突。</p>
+<pre><code class="language-shell">impl Error for WrappedError {}
+
+impl&lt;E: 'static + Error&gt; From&lt;E&gt; for WrappedError {
+    fn from(e: E) -&gt; Self {
+        Self::Wrapped(Box::new(e))
+    }
+}
+</code></pre>
+<pre><code class="language-shell">error[E0119]: conflicting implementations of trait `From&lt;WrappedError&gt;` for
+              type `WrappedError`
+   --&gt; src/main.rs:279:5
+    |
+279 |     impl&lt;E: 'static + Error&gt; From&lt;E&gt; for WrappedError {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: conflicting implementation in crate `core`:
+            - impl&lt;T&gt; From&lt;T&gt; for T;
+</code></pre>
+<p>David Tolnay 的 <a href="https://docs.rs/anyhow">anyhow</a> 是一个已经解决了这些问题的 crate（通过通过 <a href="https://github.com/dtolnay/anyhow/issues/63#issuecomment-582079114"><code>Box</code> 添加一个额外的间接层</a>），并且还添加了其他有用的功能（如堆栈跟踪）。因此，它正迅速成为错误处理的标准推荐——这里也再次推荐：考虑在应用程序中使用 anyhow crate 进行错误处理。</p>
+<h2 id="库与应用libraries-versus-applications"><a class="header" href="#库与应用libraries-versus-applications">库与应用（Libraries Versus Applications）</a></h2>
+<p>前一部分的最终建议中包括了一个限定词"...用于应用程序中的错误处理"。这是因为通常区分为库重用编写的代码和构成顶层应用程序的代码之间存在明显的差异。</p>
+<p>为库编写的代码无法预测代码使用的环境，因此最好发出具体、详细的错误信息，并让调用者自行决定如何使用这些信息。这倾向于之前描述的枚举式嵌套错误（同时也避免了在库的公共 API 中依赖 anyhow，见条目 24）。</p>
+<p>然而，应用程序代码通常需要更多地关注如何向用户展示错误。它还可能需要处理其依赖关系图中所有库发出的所有不同错误类型（见条目 25）。因此，一个更动态的错误类型（如 <a href="https://docs.rs/anyhow/latest/anyhow/struct.Error.html">anyhow::Error</a>）使得错误处理在整个应用程序中更简单、更一致。</p>
+<h2 id="牢记于心的事情things-to-remember"><a class="header" href="#牢记于心的事情things-to-remember">牢记于心的事情（Things to Remember）</a></h2>
+<ul>
+<li>标准的<code>Error trait</code>对你来说不常用，建议你为你的错误类型实现<code>Error trait</code>。</li>
+<li>在处理异构的底层错误类型时，需要决定是否有必要保留这些类型。
+<ul>
+<li>如果不需要保留，则考虑适用<code>anyhow</code>去封装你应用的子错误类型。</li>
+<li>如果需要保留，则考虑适用<code>enum</code>去封装你应用的子错误类型。考虑适用<code>thiserror</code>去更好的帮助你这么做。</li>
+</ul>
+</li>
+<li>考虑适用<code>anyhow</code>库在你的应用程序代码中进行错误处理。</li>
+<li>如果你想自己决定，无论怎么决定，都将错误类型编码到类型系统中(<a href="./Item1.html">条目 1</a>)。</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../Types/Item3.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../Types/Item3.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
