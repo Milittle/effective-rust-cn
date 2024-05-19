@@ -89,7 +89,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Cover.html"><strong aria-hidden="true">1.</strong> 封面</a></li><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">2.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="Types.html"><strong aria-hidden="true">3.</strong> 类型</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="Types/Item1.html"><strong aria-hidden="true">3.1.</strong> 条目 1: 使用类型系统表达你的数据结构</a></li><li class="chapter-item expanded "><a href="Types/Item2.html"><strong aria-hidden="true">3.2.</strong> 条目 2：使用类型系统来表达常见行为</a></li><li class="chapter-item expanded "><a href="Types/Item3.html"><strong aria-hidden="true">3.3.</strong> 条目 3: 避免在Option和Result类型上使用match操作</a></li><li class="chapter-item expanded "><a href="Types/Item4.html"><strong aria-hidden="true">3.4.</strong> 条目 4: 优先惯用的Error类型</a></li><li class="chapter-item expanded "><a href="Types/Item5.html"><strong aria-hidden="true">3.5.</strong> 条目 5：了解类型转换</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Cover.html"><strong aria-hidden="true">1.</strong> 封面</a></li><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">2.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="Types.html"><strong aria-hidden="true">3.</strong> 类型</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="Types/Item1.html"><strong aria-hidden="true">3.1.</strong> 条目 1: 使用类型系统表达你的数据结构</a></li><li class="chapter-item expanded "><a href="Types/Item2.html"><strong aria-hidden="true">3.2.</strong> 条目 2：使用类型系统来表达常见行为</a></li><li class="chapter-item expanded "><a href="Types/Item3.html"><strong aria-hidden="true">3.3.</strong> 条目 3: 避免在Option和Result类型上使用match操作</a></li><li class="chapter-item expanded "><a href="Types/Item4.html"><strong aria-hidden="true">3.4.</strong> 条目 4: 优先惯用的Error类型</a></li><li class="chapter-item expanded "><a href="Types/Item5.html"><strong aria-hidden="true">3.5.</strong> 条目 5：了解类型转换</a></li><li class="chapter-item expanded "><a href="Types/Item6.html"><strong aria-hidden="true">3.6.</strong> 条目 6: 拥抱新类型</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -1295,6 +1295,204 @@ let y = x as u16;
 </ul>
 <p>只有两种隐式强制转换的行为会受到用户定义类型的影响。第一种情况发生在用户定义的类型实现了 <a href="https://doc.rust-lang.org/std/ops/trait.Deref.html"><code>Deref</code></a> 或 <a href="https://doc.rust-lang.org/std/ops/trait.DerefMut.html"><code>DerefMut</code></a> 特征时。这些特征表明用户定义的类型在某种程度上充当智能指针（见条目 8），在这种情况下，编译器将强制将对智能指针项的引用转换为对智能指针所包含的类型项的引用（由其特征的 <a href="https://doc.rust-lang.org/std/ops/trait.Deref.html#associatedtype.Target"><code>Target</code></a>关联类型指定）。</p>
 <p>第二种用户定义类型的隐式强制转换发生在将具体对象转换为特征对象时。这个操作构建了一个具体对象的胖指针；之所以称为胖指针，是因为它包括了具体对象在内存中位置的指针和指向具体类型实现特征的虚表的指针 -- 见条目 8。</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="条目-6-拥抱新类型"><a class="header" href="#条目-6-拥抱新类型">条目 6: 拥抱新类型</a></h1>
+<p><a href="Types/./Item1.html">条目 1</a>描述了元组结构体（tuple structs），元组结构体中没有命名字段而是通过数字来进行引用访问(self.0)。这个条目着重于有已经存在的类型单个类型的元组结构体，从而创建一个新类型，该类型可以保存于封装完全相同的值范围。这种模式在Rust中非常普遍，它非常值得我们在单一的条目中进行讨论，而且可以有一个自己的名字：newtype模式。</p>
+<p>newtype模式最简单的用途是为类型指示超出其正常行为的<a href="https://doc.rust-lang.org/book/ch19-04-advanced-types.html#using-the-newtype-pattern-for-type-safety-and-abstraction">附加语意</a>.为了说明这一点，想象一个将一个卫星发送到火星的项目。这是一个非常大的项目，因此不同的团队构建了该项目的不同部分，一组处理火箭发动机的代码：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Fire the thrusters. Returns generated impulse in pound-force seconds.
+pub fn thruster_impulse(direction: Direction) -&gt; f64 {
+    // ...
+    return 42.0;
+}
+<span class="boring">}</span></code></pre></pre>
+<p>而另一组负责惯性导航系统：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Update trajectory model for impulse, provided in Newton seconds.
+pub fn update_trajectory(force: f64) {
+    // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>最终这些不同的部分需要连接在一起：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let thruster_force: f64 = thruster_impulse(direction);
+let new_direction = update_trajectory(thruster_force);
+<span class="boring">}</span></code></pre></pre>
+<p>糟糕 <a href="https://en.wikipedia.org/wiki/Mars_Climate_Orbiter#Cause_of_failure">Mars Climate Orbiter</a></p>
+<p>Rust还包含类型别名特性，它允许不同的组可以清晰地表达自己的意图：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Units for force.
+pub type PoundForceSeconds = f64;
+
+/// Fire the thrusters. Returns generated impulse.
+pub fn thruster_impulse(direction: Direction) -&gt; PoundForceSeconds {
+    // ...
+    return 42.0;
+}
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Units for force.
+pub type NewtonSeconds = f64;
+
+/// Update trajectory model for impulse.
+pub fn update_trajectory(force: NewtonSeconds) {
+    // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>然而，类型别名只是字面上的约束，它们是比以前版本的文档主食更强的提示，但是并没有直接阻止在需要使用<code>NewtonSeconds</code>值的地方传递<code>PoundForceSeconds</code>值。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let thruster_force: PoundForceSeconds = thruster_impulse(direction);
+let new_direction = update_trajectory(thruster_force);
+<span class="boring">}</span></code></pre></pre>
+<p>哦不（不知道如何翻译）</p>
+<p>从这里引出就是我们newtype模式的用武之地了：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Units for force.
+pub struct PoundForceSeconds(pub f64);
+
+/// Fire the thrusters. Returns generated impulse.
+pub fn thruster_impulse(direction: Direction) -&gt; PoundForceSeconds {
+    // ...
+    return PoundForceSeconds(42.0);
+}
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Units for force.
+pub struct NewtonSeconds(pub f64);
+
+/// Update trajectory model for impulse.
+pub fn update_trajectory(force: NewtonSeconds) {
+    // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>顾名思义，newtype是一种新类型，因此当类型不匹配时候，编译器直接会进行拦截，这里尝试将<code>PoundForceSeconds</code>传递给需要 <code>NewtonSeconds</code>的地方会导致编译错误：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let thruster_force: PoundForceSeconds = thruster_impulse(direction);
+let new_direction = update_trajectory(thruster_force);
+<span class="boring">}</span></code></pre></pre>
+<pre><code class="language-shell">error[E0308]: mismatched types
+  --&gt; src/main.rs:76:43
+   |
+76 |     let new_direction = update_trajectory(thruster_force);
+   |                         ----------------- ^^^^^^^^^^^^^^ expected
+   |                         |        `NewtonSeconds`, found `PoundForceSeconds`
+   |                         |
+   |                         arguments to this function are incorrect
+   |
+note: function defined here
+  --&gt; src/main.rs:66:8
+   |
+66 | pub fn update_trajectory(force: NewtonSeconds) {
+   |        ^^^^^^^^^^^^^^^^^ --------------------
+help: call `Into::into` on this expression to convert `PoundForceSeconds` into
+      `NewtonSeconds`
+   |
+76 |     let new_direction = update_trajectory(thruster_force.into());
+   |                                                         +++++++
+</code></pre>
+<p>根据<a href="Types/./Item5.html">条目 5</a>的描述，我们给<code>NewtonSeconds</code>类型添加标准的<code>From</code>特征的实现</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl From&lt;PoundForceSeconds&gt; for NewtonSeconds {
+    fn from(val: PoundForceSeconds) -&gt; NewtonSeconds {
+        NewtonSeconds(4.448222 * val.0)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>这样我们就允许使用<code>.into()</code>方法进行类型的转换：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let thruster_force: PoundForceSeconds = thruster_impulse(direction);
+let new_direction = update_trajectory(thruster_force.into());
+<span class="boring">}</span></code></pre></pre>
+<p>使用新类型来标记类型的附加单位语意可以帮助使布尔参数不那么容易混淆。重新审视<a href="Types/./Item1.html">条目 1</a>中的示例，使用newtype模式使参数的意图更加明确：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct DoubleSided(pub bool);
+
+struct ColorOutput(pub bool);
+
+fn print_page(sides: DoubleSided, color: ColorOutput) {
+    // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>print_page(DoubleSided(true), ColorOutput(false));
+<span class="boring">}</span></code></pre></pre>
+<p>如果需要考虑大小效率以及二进制兼容性，则可以使用<code>repr(transparent)</code>属性可确保新类型在内存中具有与内部类型相同的表示形式。</p>
+<p>这就是newtype模式的简单用法，也是<a href="Types/./Item1.html">条目 1</a>的具体示例 -- 将语意编码到类型系统中，方便编译器负责管理这些语意，避免程序员犯错。</p>
+<h2 id="绕过特征的孤儿规则"><a class="header" href="#绕过特征的孤儿规则">绕过特征的孤儿规则</a></h2>
+<p>另一个常见但是更加微妙的需要newtype模式的场景是围绕着Rust的孤儿规则的。粗略地讲，这表示只有满足如下条件之一，crate才能实现一个trait：</p>
+<ul>
+<li>crate已经定义了这个trait</li>
+<li>crate有需要实现trait的这个类型</li>
+</ul>
+<p>尝试为外来类型实现外来特征：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::fmt;
+
+impl fmt::Display for rand::rngs::StdRng {
+    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; Result&lt;(), fmt::Error&gt; {
+        write!(f, "&lt;StdRng instance&gt;")
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>会导致编译器报错（这反过来又需要newtype模式来解决）</p>
+<pre><code class="language-shell">error[E0117]: only traits defined in the current crate can be implemented for
+              types defined outside of the crate
+   --&gt; src/main.rs:146:1
+    |
+146 | impl fmt::Display for rand::rngs::StdRng {
+    | ^^^^^^^^^^^^^^^^^^^^^^------------------
+    | |                     |
+    | |                     `StdRng` is not defined in the current crate
+    | impl doesn't use only types from inside the current crate
+    |
+    = note: define and implement a trait or new type instead
+</code></pre>
+<p>这种限制的原因是由于存在有歧义的风险：如果依赖图中的两个不同的crate(条目 25)都有<code>impl std::fmt::Display for rand::rngs::StdRng</code>，那么编译器/链接器就无法在两者之间进行选择。</p>
+<p>这样经常导致编译的冲突和挫败感，例如，如果你尝试给来自另外一个crate的类型实现<code>serialize data</code>，孤儿元组则会阻止你编写<code>impl serde::Serialize for somecrate::SomeType</code></p>
+<p>但是newtype模式意味着你正在定义一个新类型，它就是当前crate的一部分，因此就可以满足孤儿原则的第二个条件，现在就可以实现外部的trait：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct MyRng(rand::rngs::StdRng);
+
+impl fmt::Display for MyRng {
+    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; Result&lt;(), fmt::Error&gt; {
+        write!(f, "&lt;MyRng instance&gt;")
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="newtype的限制"><a class="header" href="#newtype的限制">newtype的限制</a></h2>
+<p>newtype模式解决了上述两类问题 -- 防止了单位相同类型的转换和绕过孤儿规则 -- 但是它也带来了一些尴尬：涉及newtype的每个操作都需要转发到其内部类型。</p>
+<p>简单的考虑就意味着代码必须使用<code>thing.0</code>,而不是<code>thing</code>，这个很简单，编译器会告诉你哪里需要这么做。</p>
+<p>更尴尬的是是内部类型上的任何特征实现都丢失了，因为newtype是一个新类型，所以现有的内部实现都不得适用。</p>
+<p>对于可派生特征，这仅意味着newtype需要声明<code>derive</code>属性：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+pub struct NewType(InnerType);
+<span class="boring">}</span></code></pre></pre>
+<p>然而对于更加复杂的特征来说，需要一些转发样板来恢复内部类型的实现，例如：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::fmt;
+impl fmt::Display for NewType {
+    fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;'_&gt;) -&gt; Result&lt;(), fmt::Error&gt; {
+        self.0.fmt(f)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
 
                     </main>
 
