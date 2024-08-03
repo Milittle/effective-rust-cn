@@ -89,7 +89,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Cover.html"><strong aria-hidden="true">1.</strong> 封面</a></li><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">2.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="Types.html"><strong aria-hidden="true">3.</strong> 类型</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="Types/Item1.html"><strong aria-hidden="true">3.1.</strong> 条目 1: 使用类型系统表达你的数据结构</a></li><li class="chapter-item expanded "><a href="Types/Item2.html"><strong aria-hidden="true">3.2.</strong> 条目 2：使用类型系统来表达常见行为</a></li><li class="chapter-item expanded "><a href="Types/Item3.html"><strong aria-hidden="true">3.3.</strong> 条目 3: 避免在Option和Result类型上使用match操作</a></li><li class="chapter-item expanded "><a href="Types/Item4.html"><strong aria-hidden="true">3.4.</strong> 条目 4: 优先惯用的Error类型</a></li><li class="chapter-item expanded "><a href="Types/Item5.html"><strong aria-hidden="true">3.5.</strong> 条目 5：了解类型转换</a></li><li class="chapter-item expanded "><a href="Types/Item6.html"><strong aria-hidden="true">3.6.</strong> 条目 6: 拥抱新类型</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Cover.html"><strong aria-hidden="true">1.</strong> 封面</a></li><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">2.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="Types.html"><strong aria-hidden="true">3.</strong> 类型</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="Types/Item1.html"><strong aria-hidden="true">3.1.</strong> 条目 1: 使用类型系统表达你的数据结构</a></li><li class="chapter-item expanded "><a href="Types/Item2.html"><strong aria-hidden="true">3.2.</strong> 条目 2：使用类型系统来表达常见行为</a></li><li class="chapter-item expanded "><a href="Types/Item3.html"><strong aria-hidden="true">3.3.</strong> 条目 3: 避免在Option和Result类型上使用match操作</a></li><li class="chapter-item expanded "><a href="Types/Item4.html"><strong aria-hidden="true">3.4.</strong> 条目 4: 优先惯用的Error类型</a></li><li class="chapter-item expanded "><a href="Types/Item5.html"><strong aria-hidden="true">3.5.</strong> 条目 5：了解类型转换</a></li><li class="chapter-item expanded "><a href="Types/Item6.html"><strong aria-hidden="true">3.6.</strong> 条目 6: 拥抱新类型</a></li><li class="chapter-item expanded "><a href="Types/Item7.html"><strong aria-hidden="true">3.7.</strong> 条目 7: 使用Builders来构建复杂的类型</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -435,7 +435,7 @@ impl Shape {
 <p>调用一个方法总是导致执行相同的代码；从一次调用到另一次调用，变化的只是方法操作的数据。这涵盖了许多可能的场景，但如果代码需要在运行时变化怎么办？</p>
 <p>Rust 在其类型系统中包含了几个特性以适应这种情况，本节将探讨这些特性。</p>
 <h2 id="函数指针function-pointers"><a class="header" href="#函数指针function-pointers">（函数指针）Function Pointers</a></h2>
-<p>最简单的行为抽象就是[函数指针}(https://doc.rust-lang.org/std/primitive.fn.html): 指向（仅仅是）一些代码的指针，其类型反映了函数签名。该类型在编译时进行检查，因此到程序运行时，该值仅为一个指针的大小。</p>
+<p>最简单的行为抽象就是<a href="https://doc.rust-lang.org/std/primitive.fn.html">函数指针</a>: 指向（仅仅是）一些代码的指针，其类型反映了函数签名。该类型在编译时进行检查，因此到程序运行时，该值仅为一个指针的大小。</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>    fn sum(x: i32, y: i32) -&gt; i32 {
@@ -1493,6 +1493,325 @@ impl fmt::Display for NewType {
     }
 }
 <span class="boring">}</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="条目-7-使用builders来构建复杂的类型"><a class="header" href="#条目-7-使用builders来构建复杂的类型">条目 7: 使用Builders来构建复杂的类型</a></h1>
+<p>这个条目描述了构建者模式，其中复杂的数据结构有一个相关的构建者类型，使用户更容易创建数据结构的实例。</p>
+<p>Rust 强调在创建结构体的新实例时，结构体中的所有字段都必须被填充。这通过确保没有未初始化的值来保持代码的安全性，但也导致了比理想情况更多的冗长样板代码。</p>
+<p>例如，任何可选字段都必须明确标记为缺失，使用 None：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Phone number in E164 format.
+#[derive(Debug, Clone)]
+pub struct PhoneNumberE164(pub String);
+
+#[derive(Debug, Default)]
+pub struct Details {
+    pub given_name: String,
+    pub preferred_name: Option&lt;String&gt;,
+    pub middle_name: Option&lt;String&gt;,
+    pub family_name: String,
+    pub mobile_phone: Option&lt;PhoneNumberE164&gt;,
+}
+
+// ...
+
+let dizzy = Details {
+    given_name: "Dizzy".to_owned(),
+    preferred_name: None,
+    middle_name: None,
+    family_name: "Mixer".to_owned(),
+    mobile_phone: None,
+};
+<span class="boring">}</span></code></pre></pre>
+<p>这种样例代码也很脆弱，因为将来如果在结构体中添加一个新字段，就需要更新每一个构建该结构体的地方。</p>
+<p>这个样例中可以通过实现<a href="https://doc.rust-lang.org/std/default/trait.Default.html"><code>Default</code></a>特征来减少代码的冗余度，就像<a href="Types/../Traits/Item10.html">条目10</a>描述的一样。</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let dizzy = Details {
+    given_name: "Dizzy".to_owned(),
+    family_name: "Mixer".to_owned(),
+    ..Default::default()
+};
+<span class="boring">}</span></code></pre></pre>
+<p>使用 <code>Default</code> 也有助于减少在添加新字段时所需的更改，前提是新字段本身的类型实现了 <code>Default</code>。</p>
+<p>这是一个更普遍的问题：自动派生的 <code>Default</code> 实现只有在所有字段类型都实现了 <code>Default</code> trait 时才有效。如果有一个字段不符合要求，派生步骤就不起作用：</p>
+<p>下面的例子是无法编译的：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Default)]
+pub struct Details {
+    pub given_name: String,
+    pub preferred_name: Option&lt;String&gt;,
+    pub middle_name: Option&lt;String&gt;,
+    pub family_name: String,
+    pub mobile_phone: Option&lt;PhoneNumberE164&gt;,
+    pub date_of_birth: time::Date,
+    pub last_seen: Option&lt;time::OffsetDateTime&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>编译器错误：</p>
+<pre><code class="language-shell">error[E0277]: the trait bound `Date: Default` is not satisfied
+  --&gt; src/main.rs:48:9
+   |
+41 |     #[derive(Debug, Default)]
+   |                     ------- in this derive macro expansion
+...
+48 |         pub date_of_birth: time::Date,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Default` is not
+   |                                       implemented for `Date`
+   |
+   = note: this error originates in the derive macro `Default`
+</code></pre>
+<p>由于孤儿规则，代码不能为 <code>chrono::Utc</code> 实现 <code>Default</code>；但即便可以，这也不会有帮助——使用默认的出生日期值几乎总是错误的。</p>
+<p>缺少 <code>Default</code> 意味着所有字段都必须手动填写：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let bob = Details {
+    given_name: "Robert".to_owned(),
+    preferred_name: Some("Bob".to_owned()),
+    middle_name: Some("the".to_owned()),
+    family_name: "Builder".to_owned(),
+    mobile_phone: None,
+    date_of_birth: time::Date::from_calendar_date(
+        1998,
+        time::Month::November,
+        28,
+    )
+    .unwrap(),
+    last_seen: None,
+};
+<span class="boring">}</span></code></pre></pre>
+<p>如果为复杂的数据结构实现构建者模式，这些易用性可以得到改善。</p>
+<p>构建者模式的最简单变体是一个单独的结构体，它保存构建项目所需的信息。为简单起见，示例将保存项目本身的一个实例：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct DetailsBuilder(Details);
+
+impl DetailsBuilder {
+    /// Start building a new [`Details`] object.
+    pub fn new(
+        given_name: &amp;str,
+        family_name: &amp;str,
+        date_of_birth: time::Date,
+    ) -&gt; Self {
+        DetailsBuilder(Details {
+            given_name: given_name.to_owned(),
+            preferred_name: None,
+            middle_name: None,
+            family_name: family_name.to_owned(),
+            mobile_phone: None,
+            date_of_birth,
+            last_seen: None,
+        })
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>然后，构建者类型可以配备辅助方法来填充新项目的字段。每个这样的方法都会消耗 <code>self</code>，但会生成一个新的 <code>Self</code>，从而允许不同的构建方法进行链式调用：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Set the preferred name.
+pub fn preferred_name(mut self, preferred_name: &amp;str) -&gt; Self {
+    self.0.preferred_name = Some(preferred_name.to_owned());
+    self
+}
+
+/// Set the middle name.
+pub fn middle_name(mut self, middle_name: &amp;str) -&gt; Self {
+    self.0.middle_name = Some(middle_name.to_owned());
+    self
+}
+<span class="boring">}</span></code></pre></pre>
+<p>这些辅助方法可以比简单的设值器更加有用：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Update the `last_seen` field to the current date/time.
+pub fn just_seen(mut self) -&gt; Self {
+    self.0.last_seen = Some(time::OffsetDateTime::now_utc());
+    self
+}
+<span class="boring">}</span></code></pre></pre>
+<p>构建者的最后一个方法会消耗构建者并生成构建好的项目：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Consume the builder object and return a fully built [`Details`]
+/// object.
+pub fn build(self) -&gt; Details {
+    self.0
+}
+<span class="boring">}</span></code></pre></pre>
+<p>总的来说，这让构建者的客户端拥有更符合人体工学的构建体验：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let also_bob = DetailsBuilder::new(
+    "Robert",
+    "Builder",
+    time::Date::from_calendar_date(1998, time::Month::November, 28)
+        .unwrap(),
+)
+.middle_name("the")
+.preferred_name("Bob")
+.just_seen()
+.build();
+<span class="boring">}</span></code></pre></pre>
+<p>这种类型的构建者的全消耗特性导致了一些小问题。首先是无法单独分离出构建过程的各个阶段：</p>
+<p>下面的例子是错误的：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let builder = DetailsBuilder::new(
+    "Robert",
+    "Builder",
+    time::Date::from_calendar_date(1998, time::Month::November, 28)
+        .unwrap(),
+);
+if informal {
+    builder.preferred_name("Bob");
+}
+let bob = builder.build();
+<span class="boring">}</span></code></pre></pre>
+<p>这段代码会产生如下错误：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>error[E0382]: use of moved value: `builder`
+   --&gt; src/main.rs:256:15
+    |
+247 |     let builder = DetailsBuilder::new(
+    |         ------- move occurs because `builder` has type `DetailsBuilder`,
+    |                 which does not implement the `Copy` trait
+...
+254 |         builder.preferred_name("Bob");
+    |                 --------------------- `builder` moved due to this method
+    |                                       call
+255 |     }
+256 |     let bob = builder.build();
+    |               ^^^^^^^ value used here after move
+    |
+note: `DetailsBuilder::preferred_name` takes ownership of the receiver `self`,
+      which moves `builder`
+   --&gt; src/main.rs:60:35
+    |
+27  |     pub fn preferred_name(mut self, preferred_name: &amp;str) -&gt; Self {
+    |                               ^^^^
+<span class="boring">}</span></code></pre></pre>
+<p>可以通过将被消耗的构建者重新分配给同一个变量来解决这个问题：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut builder = DetailsBuilder::new(
+    "Robert",
+    "Builder",
+    time::Date::from_calendar_date(1998, time::Month::November, 28)
+        .unwrap(),
+);
+if informal {
+    builder = builder.preferred_name("Bob");
+}
+let bob = builder.build();
+<span class="boring">}</span></code></pre></pre>
+<p>这种构建者的全消耗特性的另一个缺点是只能构建一个项目；尝试通过在同一个构建者上重复调用 <code>build()</code> 来创建多个实例，会如预期那样导致编译器报错：</p>
+<p>下面的代码是有编译错误的：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let smithy = DetailsBuilder::new(
+    "Agent",
+    "Smith",
+    time::Date::from_calendar_date(1999, time::Month::June, 11).unwrap(),
+);
+let clones = vec![smithy.build(), smithy.build(), smithy.build()];
+<span class="boring">}</span></code></pre></pre>
+<pre><code class="language-shell">error[E0382]: use of moved value: `smithy`
+   --&gt; src/main.rs:159:39
+    |
+154 |   let smithy = DetailsBuilder::new(
+    |       ------ move occurs because `smithy` has type `base::DetailsBuilder`,
+    |              which does not implement the `Copy` trait
+...
+159 |   let clones = vec![smithy.build(), smithy.build(), smithy.build()];
+    |                            -------  ^^^^^^ value used here after move
+    |                            |
+    |                            `smithy` moved due to this method call
+</code></pre>
+<p>一种可选的方法是让构造器的方法接受<code>&amp;mut self</code>并输出一个<code>&amp;mut Self</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Update the `last_seen` field to the current date/time.
+pub fn just_seen(&amp;mut self) -&gt; &amp;mut Self {
+    self.0.last_seen = Some(time::OffsetDateTime::now_utc());
+    self
+}
+<span class="boring">}</span></code></pre></pre>
+<p>这样就不需要在各个构建阶段进行自我赋值了：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut builder = DetailsBuilder::new(
+    "Robert",
+    "Builder",
+    time::Date::from_calendar_date(1998, time::Month::November, 28)
+        .unwrap(),
+);
+if informal {
+    builder.preferred_name("Bob"); // no `builder = ...`
+}
+let bob = builder.build();
+<span class="boring">}</span></code></pre></pre>
+<p>然而，这个版本使得无法将构建者的构建与调用其设值方法链式结合在一起：</p>
+<p>下面的代码是错误的：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let builder = DetailsBuilder::new(
+    "Robert",
+    "Builder",
+    time::Date::from_calendar_date(1998, time::Month::November, 28)
+        .unwrap(),
+)
+.middle_name("the")
+.just_seen();
+let bob = builder.build();
+<span class="boring">}</span></code></pre></pre>
+<p>这段代码会产生如下错误：</p>
+<pre><code class="language-shell">error[E0716]: temporary value dropped while borrowed
+   --&gt; src/main.rs:265:19
+    |
+265 |       let builder = DetailsBuilder::new(
+    |  ___________________^
+266 | |         "Robert",
+267 | |         "Builder",
+268 | |         time::Date::from_calendar_date(1998, time::Month::November, 28)
+269 | |             .unwrap(),
+270 | |     )
+    | |_____^ creates a temporary value which is freed while still in use
+271 |       .middle_name("the")
+272 |       .just_seen();
+    |                   - temporary value is freed at the end of this statement
+273 |       let bob = builder.build();
+    |                 --------------- borrow later used here
+    |
+    = note: consider using a `let` binding to create a longer lived value
+</code></pre>
+<p>如编译器错误所示，可以通过给构建者项目命名来解决这个问题：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut builder = DetailsBuilder::new(
+    "Robert",
+    "Builder",
+    time::Date::from_calendar_date(1998, time::Month::November, 28)
+        .unwrap(),
+);
+builder.middle_name("the").just_seen(); // 注意这行，是单独分离开来解决上面的编译错误的
+if informal {
+    builder.preferred_name("Bob");
+}
+let bob = builder.build();
+<span class="boring">}</span></code></pre></pre>
+<p>这种可变的构建者变体还允许构建多个项目。<code>build()</code> 方法的签名必须不消耗 <code>self</code>，因此必须如下所示：</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Construct a fully built [`Details`] object.
+pub fn build(&amp;self) -&gt; Details {
+    // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>这个可重复的 <code>build()</code> 方法的实现必须在每次调用时构建一个新的项目。如果底层项目实现了 <code>Clone</code>，这很容易——构建者可以持有一个模板，并在每次构建时 <code>clone()</code> 它。如果底层项目没有实现 <code>Clone</code>，那么构建者需要有足够的状态，以便在每次调用 <code>build()</code> 时手动构建一个底层项目的实例。</p>
+<p>无论使用哪种构建者模式，样例代码现在都集中在一个地方——构建者——而不是在每个使用底层类型的地方都需要。</p>
+<p>剩余的样板代码可以通过使用宏（项目28）进一步减少，但如果你选择这种方法，你还应该检查是否有现成的 crate（特别是 <code>derive_builder</code> crate）可以提供所需的功能——前提是你愿意依赖它（项目25）。</p>
+<p>译者注：构造器模式是一个非常常用的设计模式，在Rust中可以让一个对象的构建变得收敛且简单，也不用在对象内部字段变化的时候散弹式进行修改。</p>
 
                     </main>
 
