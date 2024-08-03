@@ -35,7 +35,7 @@ Rust 在其类型系统中包含了几个特性以适应这种情况，本节将
 
 ## （函数指针）Function Pointers
 
-最简单的行为抽象就是[函数指针}(https://doc.rust-lang.org/std/primitive.fn.html): 指向（仅仅是）一些代码的指针，其类型反映了函数签名。该类型在编译时进行检查，因此到程序运行时，该值仅为一个指针的大小。
+最简单的行为抽象就是[函数指针](https://doc.rust-lang.org/std/primitive.fn.html): 指向（仅仅是）一些代码的指针，其类型反映了函数签名。该类型在编译时进行检查，因此到程序运行时，该值仅为一个指针的大小。
 
 ```rust
     fn sum(x: i32, y: i32) -> i32 {

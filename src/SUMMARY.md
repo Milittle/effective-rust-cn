@@ -9,3 +9,4 @@
   - [条目 4: 优先惯用的Error类型](./Types/Item4.md)
   - [条目 5：了解类型转换](./Types/Item5.md)
   - [条目 6: 拥抱新类型](./Types/Item6.md)
+  - [条目 7: 使用Builders来构建复杂的类型](./Types/Item7.md)
